@@ -1,4 +1,4 @@
-#include <src/weights/weights_utils.h>
+#include <src/utils/weights_utils.h>
 #include <src/utils/check.h>
 #include <vector>
 /// @brief The warpped GPU Malloc function

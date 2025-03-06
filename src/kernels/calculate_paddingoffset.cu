@@ -1,28 +1,27 @@
-#include <src/kernels/cal_paddingoffset.h>
-
+#include <src/kernels/calculate_paddingoffset.h>
 
 __global__ void calPaddingOffset(int* padding_offet, int* cum_seq_len, const int* input_length, int seq_size, int max_seq_len)
 {
     // 计算前缀和
 
     // version1: 
-    cum_seq_len[0] = 0;
-    int tmp = 0;
-    for(int i = 1; i < seq_size; i ++)
-    {
-        cum_seq_len[i] = tmp + input_length[i];
-        tmp += input_length[i];
-    }
+    // cum_seq_len[0] = 0;
+    // int tmp = 0;
+    // for(int i = 1; i < seq_size; i ++)
+    // {
+    //     cum_seq_len[i] = tmp + input_length[i];
+    //     tmp += input_length[i];
+    // }
 
-    int cur_padding_num = 0;
-    for(int i = 0; i < seq_size; i ++)
-    {
-        for(int j = 0; j < max_seq_len; j ++)
-        {
-            padding_offet[i * max_seq_len + j] = cur_padding_num;
-            if(j >= input_length[i]) cur_padding_num ++;
-        }
-    }
+    // int cur_padding_num = 0;
+    // for(int i = 0; i < seq_size; i ++)
+    // {
+    //     for(int j = 0; j < max_seq_len; j ++)
+    //     {
+    //         padding_offet[i * max_seq_len + j] = cur_padding_num;
+    //         if(j >= input_length[i]) cur_padding_num ++;
+    //     }
+    // }
     
     // version 2:
 

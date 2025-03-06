@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <memory>
 
 template <typename T>
 inline std::string vec2str(std::vector<T> vec) {

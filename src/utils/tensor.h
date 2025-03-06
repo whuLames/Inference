@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <vector>
 #include <numeric>
@@ -45,13 +46,13 @@ DataType getTensorType()
         return BYTES;
     }
     else {
-        return UNSUPPORTED;
+        return UNKOWN;
     }
 }
 
-// The TensorWarpper is convinent for the implementation of Tensor-Map
+// The TensorWrapper is convinent for the implementation of Tensor-Map
 template<typename T>
-class TensorWarpper;
+class TensorWrapper;
 
 struct Tensor {
     Device device;  // The device of the Tensor located
@@ -68,8 +69,8 @@ struct Tensor {
     }
 
     template<typename T>
-    TensorWarpper<T>* as() {
-        return static_cast<TensorWarpper<T>*>(this);
+    TensorWrapper<T>* as() {
+        return static_cast<TensorWrapper<T>*>(this);
     }
 
     std::string DeviceString() {
@@ -85,7 +86,7 @@ struct Tensor {
             {INT8, "Int8"},
             {BOOL, "Bool"},
             {BYTES, "Bytes"},
-            {UNKOWN, "Unkown"}
+            {UNKOWN, "Unkown"},
         };
 
         return fmtstr("Tensor[device=%s, dtype=%s, shape=%s]", device_str.c_str(), dtype2str[dtype].c_str(), vec2str(shape).c_str());
@@ -95,25 +96,28 @@ struct Tensor {
 
 
 template<typename T>
-class TensorWarpper: public Tensor {
+class TensorWrapper: public Tensor {
+public:  // TODO: class中不加 权限修饰符, 其默认访问权限为 private, 而struct中默认为public
     T* data;
-    int size_cache = -1;
+    // int size_cache = -1;
 
     // 构造函数
-    TensorWarpper() = default;
-    TensorWarpper(Device _device, DataType _dtype, std::vector<int> _shape): Tensor(_device, _dtype, _shape) {}
-    TensorWarpper(Device _device, DataType _dtype, std::vector<int> _shape, T* _data): Tensor(_device, _dtype, _shape), data(_data) {
+    TensorWrapper() = default;
+    TensorWrapper(Device _device, DataType _dtype, std::vector<int> _shape): Tensor(_device, _dtype, _shape) {}
+    TensorWrapper(Device _device, DataType _dtype, std::vector<int> _shape, T* _data): Tensor(_device, _dtype, _shape), data(_data) {
         DataType in_dtype = getTensorType<T>();
         LLM_CHECK_WITH_INFO(in_dtype == _dtype, "when build TensorWrapper, the passed in data type should be same as dtype in params");
     }
 
     virtual int size() const {
-        if(~size_cache) return size_cache;
+        // if(~size_cache) return size_cache;
 
-        if(data == nullptr || shape.size() == 0) size_cache = 0;
-        else size_cache =  std::accumulate(shape.begin(), shape.end(), int(1), std::multiplies<int>());
+        // if(data == nullptr || shape.size() == 0) size_cache = 0;
+        // else size_cache =  std::accumulate(shape.begin(), shape.end(), int(1), std::multiplies<int>());
         
-        return size_cache;
+        // return size_cache;
+        if(shape.size() == 0) return 0;
+        return std::accumulate(shape.begin(), shape.end(), int(1), std::multiplies<int>());
     }
 
     // get val
@@ -130,7 +134,7 @@ class TensorWarpper: public Tensor {
 
     // get ptr by offset
     T* getPtrByOffset(int offset) {
-        int sz = ~i ? size_cache : size();
+        int sz = size();
         LLM_CHECK(offset < sz);
         return (T*)(data + offset);
     }

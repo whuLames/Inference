@@ -7,4 +7,4 @@ Get the input embedding for given id
 #include <src/weights/embedding_weights.h>
 
 template <typename T>
-void launchEmbeddingFactor(TensorWarpper<int>* input_ids, EmbeddingWeight<T>* embeddingTables, TensorWarpper<T>* out);
+void launchEmbeddingFactor(TensorWrapper<int>* input_ids, EmbeddingWeight<T>* embeddingTables, TensorWrapper<T>* out);

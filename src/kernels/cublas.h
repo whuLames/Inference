@@ -1,8 +1,16 @@
-#include <src/utils/check.h>
-#include <cuda_runtime.h>
-#include <cublas_v2.h>
-#include <cublasLt.h>
 
+#pragma once
+#include <cublasLt.h>
+#include <cublas_v2.h>
+#include <cuda_runtime.h>
+#include <map>
+#include <string>
+#include <src/utils/check.h>
+//1.cublas API: must allocate the required matrices in the GPU memory space, 
+// fill them with data, call the sequence of desired cuBLAS functions, and then upload the results back to the host.
+//2.cublasXt API: have the data on the Host
+//3.cuBLASLt API: lightweight library dedicated to GEMM  with a new flexible API. 
+// adds flexibility in matrix data layouts, input types, compute types, and also in choosing the algorithmic implementations and heuristics through parameter programmability
 /// @brief 封装cublas对象，实现GEMM
 class cublasWrapper {
     private:

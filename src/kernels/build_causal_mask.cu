@@ -14,8 +14,8 @@ __global__ void buildCasualMask(T* mask, int* seqs_len, int* contexts_len, int m
     
     while(tid < matrix_size_each_seq)
     {
-        int row_id =  id / max_context_len;
-        int col_id =  id % max_context_len;
+        int row_id =  tid / max_context_len;
+        int col_id =  tid % max_context_len;
         int index = matrix_size_each_seq * bid + tid;
 
         // if(row_id >= s_len) mask[index] = T(0);
@@ -36,7 +36,7 @@ __global__ void buildCasualMask(T* mask, int* seqs_len, int* contexts_len, int m
 }
 
 template <typename T>
-void launchBuildCasualMask(TensorWarpper<T>* mask, TensorWarpper<int>* seqs_len, TensorWarpper<int>* contexts_len)
+void launchBuildCasualMask(TensorWrapper<T>* mask, TensorWrapper<int>* seqs_len, TensorWrapper<int>* contexts_len)
 {
     int batch_size = mask -> data[0];
     int max_seq_len = mask -> data[1];
@@ -45,5 +45,5 @@ void launchBuildCasualMask(TensorWarpper<T>* mask, TensorWarpper<int>* seqs_len,
     dim3 grid_size(batch_size);
     dim3 block_size(256);
 
-    buildCasualMask<T><<<grid_size, block_size>>>(mask -> data, seq_len -> data, context_len -> data, max_seq_len, max_context_len);
+    buildCasualMask<T><<<grid_size, block_size>>>(mask -> data, seqs_len -> data, contexts_len -> data, max_seq_len, max_context_len);
 }

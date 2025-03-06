@@ -1,17 +1,17 @@
-#include "cublas_utils.h"
+#include <src/kernels/cublas.h>
 #include <iostream>
 
-// (RussWong) notes:cublas gemm和stridedbatchgemm调库的写法，比较固定
+// 初始化 cublasHandle 和 cublasLtHandle
 cublasWrapper::cublasWrapper(cublasHandle_t cublas_handle,
                                  cublasLtHandle_t cublaslt_handle):
     cublas_handle_(cublas_handle),
-    cublaslt_handle_(cublaslt_handle)
-{
-}
+    cublaslt_handle_(cublaslt_handle) {}
 
 cublasWrapper::~cublasWrapper()
 {
 }
+
+
 // invoked in model example main function after initialize cublas wrapper
 void cublasWrapper::setFP32GemmConfig()
 {
@@ -46,9 +46,13 @@ void cublasWrapper::Gemm(cublasOperation_t transa,
 {
     half h_alpha = (half)(f_alpha);
     half h_beta  = (half)(f_beta);
-    int is_fp16_computeType = computeType_ == CUDA_R_16F ? 1 : 0; //之前是CUDA_R_16F
+
+    // 判断计算类型是否为float16
+    int is_fp16_computeType = computeType_ == CUDA_R_16F ? 1 : 0; // 之前是CUDA_R_16F
+
     const void* alpha = is_fp16_computeType ? reinterpret_cast<void*>(&(h_alpha)) : reinterpret_cast<void*>(&f_alpha);
     const void* beta  = is_fp16_computeType ? reinterpret_cast<void*>(&(h_beta)) : reinterpret_cast<void*>(&f_beta);
+    
     CHECK_CUBLAS(cublasGemmEx(cublas_handle_,
                             transa,
                             transb,

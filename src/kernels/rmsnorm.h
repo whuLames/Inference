@@ -4,4 +4,4 @@
 #include <src/utils/check.h>
 #include <src/utils/vectorize_utils.h>
 template<typename T>
-void launchRMSNorm(TensorWarpper<T>* in, TensorWarpper<T>* residual, LayerNormWeight<T> norm_weight, float eps);
+void launchRMSNorm(TensorWrapper<T>* in, TensorWrapper<T>* residual, LayerNormWeight<T> norm_weight, float eps);

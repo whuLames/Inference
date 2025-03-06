@@ -17,13 +17,13 @@ __global__ void embeddingFactor(const int* input_ids, T* embeddingTables, T* out
         int input_id = input_ids[idx / hidden_size];
         int element_id = idx % hidden_size;
         int element = embeddingTables[input_id * hidden_size + element_id];
-        out[index] = element; 
+        out[idx] = element; 
         idx += num_threads;
     }
 }
 
 template<typename T>
-void launchEmbeddingFactor(TensorWarpper<int>* input_ids, EmbeddingWeight<T>* embeddingTables, TensorWarpper<T>* out)
+void launchEmbeddingFactor(TensorWrapper<int>* input_ids, EmbeddingWeight<T>* embeddingTables, TensorWrapper<T>* out)
 {
     int token_num = input_ids -> shape[0];
     int hidden_size = out -> shape[1];
@@ -34,7 +34,7 @@ void launchEmbeddingFactor(TensorWarpper<int>* input_ids, EmbeddingWeight<T>* em
     // grid_size.x = (out->shape[0] * out->shape[1] + block_size.x - 1) / block_size.x to gurantee one threads for one element
     grid_size.x = 2048;
     LLM_CHECK_WITH_INFO(token_num == out -> shape[0], "The inputs shape is not match with the output shape");
-    embeddingFactor<T><<<grid_size, block_size>>(input_ids -> data, embeddingTables -> data, out -> data, token_num, hidden_size); 
+    embeddingFactor<T><<<grid_size, block_size>>>(input_ids -> data, embeddingTables -> data, out -> data, token_num, hidden_size); 
 }
 
 // 实例化
@@ -45,4 +45,6 @@ void launchEmbeddingFactor(TensorWarpper<int>* input_ids, EmbeddingWeight<T>* em
 
 2. 对于上述函数，其有cuda语义符号 即 <<<>>>，即使其放在.h头文件中，c++语义也无法对其进行处理，所以需要在此进行实例化
 */ 
-template void launchEmbeddingFactor(TensorWarpper<int>* input_ids, EmbeddingWeight<float>* embeddingTables, TensorWarpper<float>* out);
+
+template void launchEmbeddingFactor(TensorWrapper<int>* input_ids, EmbeddingWeight<float>* embeddingTables, TensorWrapper<float>* out);
+template void launchEmbeddingFactor(TensorWrapper<int>* input_ids, EmbeddingWeight<half>* embeddingTables, TensorWrapper<half>* out);

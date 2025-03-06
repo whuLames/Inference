@@ -39,8 +39,8 @@ __global__ void rmsNorm(T* decoder_in, T* residual, T* weight, float eps, int nu
     int vec_size = Vec<T>::size;
     using Vec_t = typename Vec<T>::Type;
     Vec_t* out = reinterpret_cast<Vec_t*>(decoder_in + blockDim.x * hidden_units); // 每个block负责一个token对应的embedding
-    Vec_t* rsd = reinterpret_cast<Vec_t*>(reidual + blockDim.x * hidden_units);
-    float* thread_sum = 0.0f;
+    Vec_t* rsd = reinterpret_cast<Vec_t*>(residual + blockDim.x * hidden_units);
+    float thread_sum = 0.0f;
     for(int idx = threadIdx.x; idx * vec_size < hidden_units; idx += blockDim.x)
     {
         Vec_t vec = out[idx];
@@ -67,23 +67,25 @@ __global__ void rmsNorm(T* decoder_in, T* residual, T* weight, float eps, int nu
     
     if(threadIdx.x == 0) 
     {
-        factor = rsqrtf((float)(thread_sum / hidden_units) + eps);
+        factor = rsqrtf((float)thread_sum / hidden_units + eps);
     }
     __syncthreads(); // 同步以确保每一个 thread 都能够正确获取 factor的值
 
     // 向量化读取 weights
-    Vec_t w = reinterpret_cast<Vec_t*>(weight);
+    Vec_t* w = reinterpret_cast<Vec_t*>(weight);
     for(int idx = threadIdx.x; idx * vec_size < hidden_units; idx += blockDim.x)
     {
-        out[idx].x *= w[idx].x;
-        out[idx].y *= w[idx].y;
-        out[idx].z *= w[idx].z;
-        out[idx].w *= w[idx].w;
+        Vec_t tmp = out[idx];
+
+        out[idx].x = tmp.x * factor * w[idx].x;
+        out[idx].y = tmp.x * factor * w[idx].y;
+        out[idx].z = tmp.x * factor * w[idx].z;
+        out[idx].w = tmp.x * factor * w[idx].w;
     }
 }
 
 template<typename T>
-void launchRMSNorm(TensorWarpper<T>* decoder_in, TensorWarpper<T>* decoder_residual, LayerNormWeight<T> norm_weight, float eps)
+void launchRMSNorm(TensorWrapper<T>* decoder_in, TensorWrapper<T>* decoder_residual, LayerNormWeight<T>* norm_weight, float eps)
 {
     int num_tokens = decoder_in -> shape[0];
     int hidden_units = decoder_in -> shape[1];
@@ -94,6 +96,9 @@ void launchRMSNorm(TensorWarpper<T>* decoder_in, TensorWarpper<T>* decoder_resid
     dim3 block_size(num_threads);
     dim3 grid_size(num_blocks);
 
-    rmsNorm<T><<<grid_size, block_size>>>(decoder_in -> data, decoder_residual -> data, norm_weight -> data, 
+    rmsNorm<T><<<grid_size, block_size>>>(decoder_in -> data, decoder_residual -> data, norm_weight -> gamma, 
                                             eps, num_tokens, hidden_units);
 }
+
+// 实例化
+template void launchRMSNorm(TensorWrapper<float>* decoder_in, TensorWrapper<float>* decoder_residual, LayerNormWeight<float>* norm_weight, float eps);
