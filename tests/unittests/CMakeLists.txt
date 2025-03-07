@@ -8,7 +8,20 @@ target_link_libraries(
     -lcudart
     -lcudadevrt
     embeddingFunctor)
+    add_executable(embedding
+    test_input_embedding.cu
+)
 
+add_executable(rmsnorm
+        test_rmsnorm.cu)
+        
+target_link_libraries(
+    rmsnorm_test PUBLIC
+    -lcudart
+    -lcudadevrt
+    rmsnorm
+)
+    
 # add_executable(rms_norm
 #     test_rmsnorm.cu
 # )
