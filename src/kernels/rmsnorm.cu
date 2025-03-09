@@ -29,6 +29,7 @@ __device__ T blockReduce(T val)
     __syncthreads();
 
     T sum = tid < warp_num ? reduce_res[tid] : T(0);
+    sum = warpReduce<T>(sum);
     return sum;
 }
 
